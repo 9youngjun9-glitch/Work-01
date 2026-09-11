@@ -1,46 +1,564 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <title>나의 첫 HTML</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding-top: 100px;
-            background-color: #f5f5f5;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>자기소개 페이지</title>
 
-        h1 {
-            color: #333;
-        }
+<!-- 한글이 예쁘게 보이는 무료 폰트 (Pretendard) -->
+<link rel="stylesheet" as="style" crossorigin
+  href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 
-        p {
-            color: #666;
-        }
+<style>
+/* ============================================================
+   0. 색상 · 여백 설정  (여기 값만 바꾸면 페이지 전체 색이 바뀝니다)
+   ============================================================ */
+:root{
+  --bg:        #ffffff;   /* 배경색 */
+  --bg-soft:   #f4f5f7;   /* 옅은 회색 배경 (섹션 구분용) */
+  --text:      #16181c;   /* 본문 글자색 (진한 검정) */
+  --text-mute: #4b5563;   /* 보조 설명 글자색 (회색) */
+  --border:    #e5e7eb;   /* 선 색 */
+  --accent:    #b3001b;   /* SKT 레드 (버튼, 글자 강조용 – 흰 배경에서 대비 7:1 이상, 안전) */
+  --accent-bg: #fff1f2;   /* 레드 계열의 아주 옅은 배경 */
+  --accent-soft: #f6d9dc; /* 톤다운된 서브컬러 (버튼 '활성' 상태 배경 – 대비 5.4:1, 안전) */
+  --radius:    6px;
+  --max-w:     1120px;
 
-        button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            background-color: #4f46e5;
-            color: white;
-            cursor: pointer;
-        }
+  /* 호버/포커스로 내용이 펼쳐질 때 걸리는 시간. 0.3s → 0.6s 처럼 숫자만 바꾸면 속도가 바뀝니다 */
+  --motion-speed: 0.25s;
+}
 
-        button:hover {
-            background-color: #3730a3;
-        }
-    </style>
+/* 시스템이 "동작 줄이기"를 설정했거나, 아래 토글 버튼을 누르면 애니메이션을 없앱니다 */
+@media (prefers-reduced-motion: reduce){
+  :root{ --motion-speed: 0s; }
+}
+body.reduced-motion{
+  --motion-speed: 0s !important;
+}
+
+*{ box-sizing: border-box; }
+html, body{
+  max-width: 100%;
+  overflow-x: hidden;      /* 가로 스크롤(넘침) 방지 안전장치 */
+}
+body{
+  margin:0;
+  font-family: 'Pretendard', -apple-system, system-ui, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  line-height: 1.6;
+  font-size: 16px;
+}
+a{ color: var(--accent); }
+a:focus-visible, button:focus-visible{
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+.wrap{
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 0 32px;
+}
+h1, h2, h3{
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+section{ padding: 40px 0; }
+
+/* ---------------- 헤더 ---------------- */
+header{
+  position: sticky; top: 0; z-index: 10;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--border);
+}
+.header-inner{
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 14px 32px;
+  max-width: var(--max-w);
+  margin: 0 auto;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.logo{
+  font-weight:800; font-size: 17px; text-decoration:none; color: var(--text);
+}
+nav{ display:flex; gap: 22px; flex-wrap: wrap; }
+nav a{
+  color: var(--text); text-decoration:none; font-size: 14px; font-weight:500;
+}
+nav a:hover, nav a:focus-visible{ color: var(--accent); }
+
+#motion-toggle{
+  font-size: 13px;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--text-mute);
+  cursor: pointer;
+}
+#motion-toggle[aria-pressed="true"]{
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ---------------- 히어로 (소개) ---------------- */
+#hero{ padding: 44px 0 28px; position: relative; overflow: hidden; }
+#hero h1{
+  font-size: clamp(26px, 3.1vw, 40px);
+  line-height: 1.35;
+  max-width: 18ch;
+}
+#hero .lede{
+  margin-top: 14px;
+  color: var(--text-mute);
+  font-size: 15px;
+  max-width: 62ch;
+}
+
+/* 타이틀(히어로) 배경 사진 — 카드 사진과 똑같은 원리입니다.
+   <img id="hero-photo" src=""> 의 src만 채우면 켜지고, 비워두면 완전히 안 보입니다. */
+#hero .hero-photo,
+#hero .hero-fade{ display: none; }
+
+#hero:has(.hero-photo[src]:not([src=""])) .hero-photo{
+  display: block;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+/* 아래에서 위로 퍼지는 어둡게+블러 레이어 (숫자 의미는 카드 사진 부분과 동일) */
+#hero:has(.hero-photo[src]:not([src=""])) .hero-fade{
+  display: block;
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 80%;
+  background: linear-gradient(to top, rgba(0,0,0,.85), rgba(0,0,0,.4) 45%, transparent 100%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  mask-image: linear-gradient(to top, black 40%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to top, black 40%, transparent 100%);
+  z-index: 1;
+}
+#hero:has(.hero-photo[src]:not([src=""])) .wrap{
+  position: relative;
+  z-index: 2;
+  padding-top: 90px;   /* 사진이 있을 때 글씨를 사진 아래쪽으로 내려서 배치 */
+}
+#hero:has(.hero-photo[src]:not([src=""])) h1,
+#hero:has(.hero-photo[src]:not([src=""])) .lede{
+  color: #fff;
+}
+#hero:has(.hero-photo[src]:not([src=""])) .lede{
+  color: rgba(255,255,255,.85);
+}
+
+/* ---------------- 활동/강점 카드 (호버로 내용 펼치기) ---------------- */
+#activities h2{ font-size: 20px; margin-bottom: 4px; }
+.section-sub{ color: var(--text-mute); font-size: 14px; margin-bottom: 20px; }
+
+.card-grid{
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);   /* 2열 = 4분면 느낌. 열 개수를 바꾸려면 2를 다른 숫자로 */
+  gap: 20px;
+}
+@media (max-width: 700px){
+  .card-grid{ grid-template-columns: 1fr; } /* 화면이 아주 좁을 때만 1열로 (안전장치) */
+}
+
+/* 카드 한 장 = "상호작용 1개" 담당 영역. 카드 전체 크기는 여기서 조절합니다 */
+.reveal-card{
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);   /* 세로띠: 굵기 3px, 색 --accent */
+  border-radius: var(--radius);
+  padding: 16px;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  min-height: 420px;   /* ← 카드 전체 높이. 이 숫자만 키우면 카드가 더 커집니다 */
+}
+
+.evidence-line{ margin-top: 10px; font-size: 13px; }
+.evidence-line a{ text-decoration: underline; }
+
+/* ================================================================
+   카드 사진 + 텍스트 영역
+   - 기본으로 보이는 내용: 제목(h3) + 요약(.summary) → .card-media-caption
+   - 마우스를 올리면(hover) 보이는 내용: 상황·행동·결과 → .card-hover-detail
+   - 사진: <img class="card-photo" src="...">. src를 비우면 사진 없이
+     연한 배경 + 검정 글씨 카드로 자동 전환됩니다 (:has 선택자가 감지).
+   ================================================================ */
+.card-media{
+  position: relative;
+  flex: 1;                       /* 카드에서 남는 공간을 사진이 꽉 채움 */
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--bg-soft);    /* 사진이 없을 때 보이는 배경색 */
+}
+.card-photo{
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: none;                 /* 기본값: src 없으면 숨김 */
+}
+.card-media:has(.card-photo[src]:not([src=""])) .card-photo{
+  display: block;
+}
+
+/* 아래에서 위로 옅어지는 "어둡게 + 블러" 레이어. 사진이 있을 때만 보입니다.
+   --card-fade-height : 블러가 차지하는 높이 비율 (아래 기준)
+   --card-fade-blur    : 블러 강도
+   --card-fade-dark    : 글씨 바로 아래쪽 어둡기(0~1) */
+.card-media{
+  --card-fade-height: 78%;
+  --card-fade-blur: 10px;
+  --card-fade-dark: 0.85;
+}
+.card-media-fade{
+  position: absolute; left: 0; right: 0; bottom: 0;
+  height: var(--card-fade-height);
+  background: linear-gradient(to top,
+      rgba(0,0,0,var(--card-fade-dark)) 0%,
+      rgba(0,0,0,calc(var(--card-fade-dark) * 0.55)) 45%,
+      transparent 100%);
+  backdrop-filter: blur(var(--card-fade-blur));
+  -webkit-backdrop-filter: blur(var(--card-fade-blur));
+  mask-image: linear-gradient(to top, black 45%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to top, black 45%, transparent 100%);
+  opacity: 0;                    /* 기본값: 사진 없으면 숨김 */
+}
+.card-media:has(.card-photo[src]:not([src=""])) .card-media-fade{
+  opacity: 1;
+}
+
+/* 기본으로 노출되는 텍스트 (제목 + 요약) — 폰트 크기는 여기서 지정 */
+.card-media-caption{
+  position: absolute; left: 0; right: 0; bottom: 0;
+  padding: 16px;
+  z-index: 2;
+  transition: opacity var(--motion-speed) ease;
+}
+.card-media-caption h3{
+  margin: 0;
+  font-size: 18px;      /* ← 기본 노출 제목 크기 */
+}
+.card-media-caption .summary{
+  margin-top: 6px;
+  font-size: 14px;      /* ← 기본 노출 요약 크기 */
+}
+/* 사진이 없을 때: 검정 글씨 / 사진이 있을 때: 흰 글씨 (자동 전환) */
+.card-media-caption h3{ color: var(--text); }
+.card-media-caption .summary{ color: var(--text-mute); }
+.card-media:has(.card-photo[src]:not([src=""])) .card-media-caption h3{ color: #fff; }
+.card-media:has(.card-photo[src]:not([src=""])) .card-media-caption .summary{ color: rgba(255,255,255,.85); }
+
+/* 마우스를 올렸을 때만 나타나는 상세 내용 (상황·행동·결과) */
+.card-hover-detail{
+  position: absolute; left: 0; right: 0; bottom: 0;
+  padding: 16px;
+  z-index: 3;
+  opacity: 0;
+  transition: opacity var(--motion-speed) ease;
+}
+.card-hover-detail dt{ font-size: 12.5px; font-weight: 700; margin-top: 6px; }
+.card-hover-detail dt:first-child{ margin-top: 0; }
+.card-hover-detail dd{ margin: 2px 0 0; font-size: 13.5px; }
+.card-hover-detail dt, .card-hover-detail dd{ color: var(--text); }
+.card-media:has(.card-photo[src]:not([src=""])) .card-hover-detail dt,
+.card-media:has(.card-photo[src]:not([src=""])) .card-hover-detail dd{
+  color: #fff;
+}
+
+/* 호버(마우스) 또는 포커스(키보드로 카드 안 링크에 Tab 진입)하면
+   기본 텍스트는 사라지고 상세 내용이 크로스페이드로 나타납니다 */
+.reveal-card:hover .card-media-caption,
+.reveal-card:focus-within .card-media-caption{
+  opacity: 0;
+}
+.reveal-card:hover .card-hover-detail,
+.reveal-card:focus-within .card-hover-detail{
+  opacity: 1;
+}
+
+/* ---------------- 공개 범위 ---------------- */
+#scope{ background: var(--bg-soft); }
+#scope h2{ font-size: 20px; }
+.scope-grid{
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+.scope-box{
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+}
+.scope-box h3{ font-size: 15px; }
+.scope-box ul{ margin: 10px 0 0; padding-left: 18px; font-size: 14px; color: var(--text-mute); }
+.scope-box li{ margin-bottom: 6px; }
+
+/* ---------------- 확인 방법 ---------------- */
+#verify h2{ font-size: 20px; }
+.verify-list{
+  margin-top: 16px;
+  display: grid;
+  gap: 10px;
+}
+.verify-item{
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 14px;
+  font-size: 14px;
+  border-top: 1px solid var(--border);
+  padding: 12px 0;
+}
+.verify-item span{ color: var(--text-mute); font-size: 13px; }
+
+/* ---------------- 푸터 ---------------- */
+footer{
+  border-top: 1px solid var(--border);
+  padding: 24px 0 40px;
+  font-size: 13px;
+  color: var(--text-mute);
+}
+footer a{ color: var(--text-mute); }
+
+/* 두 기준 해상도(1366x768 / 1920x1080)에서 세로 공간이 빠듯할 때 여백을 살짝 줄여줍니다 */
+@media (max-height: 800px){
+  #hero{ padding: 28px 0 18px; }
+  section{ padding: 26px 0; }
+}
+</style>
 </head>
 <body>
 
-    <h1>안녕하세요! 조영준입니다 👋</h1>
-    <p>간단한 HTML 페이지입니다.</p>
+<header>
+  <div class="header-inner">
+    <a class="logo" href="#hero">이니셜/이름</a>
+    <!-- ✏️ EDIT: 왼쪽 로고 글자를 본인 이름 이니셜 등으로 바꾸세요 (개인정보 과다 노출 주의) -->
 
-    <button onclick="alert('버튼을 눌렀어요!')">
-        클릭하기
+    <nav aria-label="주요 메뉴">
+      <a href="#hero">소개</a>
+      <a href="#activities">활동</a>
+      <a href="#scope">공개 범위</a>
+      <a href="#verify">확인 방법</a>
+    </nav>
+
+    <button id="motion-toggle" type="button" aria-pressed="false">
+      움직임 줄이기
     </button>
+  </div>
+</header>
+
+<main>
+
+  <!-- =========================================================
+       1. 소개 (한 문장으로: 누구에게 무엇을 보여주는가)
+       ========================================================= -->
+  <section id="hero">
+    <!-- ✏️ 사진을 쓰려면 아래 src=""에 경로만 넣으세요 (예: src="images/hero.jpg"). 비워두면 사진 없이 지금 모습 그대로입니다 -->
+    <img class="hero-photo" src="" alt="">
+    <div class="hero-fade"></div>
+    <div class="wrap">
+      <h1>
+        정보보안 직무 채용 담당자에게<br>
+        제 학습 활동과 근거를 보여드리는 페이지입니다.
+      </h1>
+      <!-- ✏️ EDIT: 위 한 문장을 "누구에게, 무엇을 보여주는지"로 직접 수정하세요 -->
+      <p class="lede">
+        정보보안 분야 취업을 준비하며 들은 수업과 프로젝트에서 확인한 강점 3가지를,
+        상황–행동–결과와 공개 가능한 근거로 정리했습니다.
+      </p>
+    </div>
+  </section>
+
+  <!-- =========================================================
+       2. 활동 / 강점 (카드에 마우스를 올리면 상세 내용이 나타납니다)
+       ========================================================= -->
+  <section id="activities">
+    <div class="wrap">
+      <h2>강점과 활동 3가지</h2>
+      <p class="section-sub">각 카드에 마우스를 올리거나 Tab으로 이동하면 상황·행동·결과가 나타납니다.</p>
+
+      <div class="card-grid">
+
+        <!-- 카드 1 -->
+        <article class="reveal-card">
+          <!-- ✏️ 사진을 다른 걸로 바꾸려면 src 경로만 교체하세요. src=""로 비우면 사진 없이 연한 배경으로 자동 전환됩니다 -->
+          <div class="card-media">
+            <img class="card-photo" src="https://picsum.photos/seed/security1/900/900" alt="">
+            <div class="card-media-fade"></div>
+
+            <div class="card-media-caption">
+              <h3>강점 제목 1 (예: 취약점 분석 스터디 운영)</h3>
+              <p class="summary">기본으로 보이는 한 줄 요약을 여기에 적으세요.</p>
+            </div>
+
+            <div class="card-hover-detail">
+              <dl>
+                <dt>상황</dt>
+                <dd>이 활동을 하게 된 배경을 적으세요.</dd>
+                <dt>행동</dt>
+                <dd>본인이 실제로 한 일을 적으세요.</dd>
+                <dt>결과</dt>
+                <dd>눈으로 확인 가능한 결과(수치, 산출물 등)를 적으세요.</dd>
+              </dl>
+            </div>
+          </div>
+
+          <p class="evidence-line">
+            근거: <a href="#evidence-note">스터디 발표 자료 (링크로 교체)</a>
+          </p>
+        </article>
+
+        <!-- 카드 2 -->
+        <article class="reveal-card">
+          <div class="card-media">
+            <img class="card-photo" src="https://picsum.photos/seed/security2/900/900" alt="">
+            <div class="card-media-fade"></div>
+
+            <div class="card-media-caption">
+              <h3>강점 제목 2 (예: CTF 문제 풀이 기록)</h3>
+              <p class="summary">기본으로 보이는 한 줄 요약을 여기에 적으세요.</p>
+            </div>
+
+            <div class="card-hover-detail">
+              <dl>
+                <dt>상황</dt>
+                <dd>이 활동을 하게 된 배경을 적으세요.</dd>
+                <dt>행동</dt>
+                <dd>본인이 실제로 한 일을 적으세요.</dd>
+                <dt>결과</dt>
+                <dd>눈으로 확인 가능한 결과(수치, 산출물 등)를 적으세요.</dd>
+              </dl>
+            </div>
+          </div>
+
+          <p class="evidence-line">
+            근거: <a href="#evidence-note">풀이 기록 저장소 (링크로 교체)</a>
+          </p>
+        </article>
+
+        <!-- 카드 3 -->
+        <article class="reveal-card">
+          <div class="card-media">
+            <img class="card-photo" src="https://picsum.photos/seed/security3/900/900" alt="">
+            <div class="card-media-fade"></div>
+
+            <div class="card-media-caption">
+              <h3>강점 제목 3 (예: 꾸준한 학습 기록)</h3>
+              <p class="summary">기본으로 보이는 한 줄 요약을 여기에 적으세요.</p>
+            </div>
+
+            <div class="card-hover-detail">
+              <dl>
+                <dt>상황</dt>
+                <dd>이 활동을 하게 된 배경을 적으세요.</dd>
+                <dt>행동</dt>
+                <dd>본인이 실제로 한 일을 적으세요.</dd>
+                <dt>결과</dt>
+                <dd>눈으로 확인 가능한 결과(수치, 산출물 등)를 적으세요.</dd>
+              </dl>
+            </div>
+          </div>
+
+          <p class="evidence-line">
+            근거: <a href="#evidence-note">학습 블로그 (링크로 교체)</a>
+          </p>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================
+       3. 공개 범위 점검표
+       ========================================================= -->
+  <section id="scope">
+    <div class="wrap">
+      <h2>공개 범위</h2>
+      <div class="scope-grid">
+        <div class="scope-box">
+          <h3>공개하는 것</h3>
+          <ul>
+            <li>수업/프로젝트에서 만든 결과물 요약</li>
+            <li>학습 중인 보안 분야와 관심 주제</li>
+            <li>공개 가능한 활동 근거 링크</li>
+          </ul>
+          <!-- ✏️ EDIT: 실제로 공개할 정보 3가지로 바꾸세요 -->
+        </div>
+        <div class="scope-box deny">
+          <h3>공개하지 않는 것</h3>
+          <ul>
+            <li>실명, 생년월일 등 개인 식별 정보</li>
+            <li>연락처, 주소 등 사적인 정보</li>
+            <li>비밀번호·API 키 등 인증 정보</li>
+          </ul>
+          <!-- ✏️ EDIT: 실제로 공개하지 않을 정보 3가지로 바꾸세요 -->
+        </div>
+      </div>
+
+      <p id="evidence-note" class="section-sub" style="margin-top:22px;">
+        ※ 위 "근거" 링크는 예시입니다. 실제 배포 전, 각 카드의 링크를 본인의 공개 가능한 결과물 주소로 바꾸세요.
+      </p>
+    </div>
+  </section>
+
+  <!-- =========================================================
+       4. 확인 방법 (테스트 방법)
+       ========================================================= -->
+  <section id="verify">
+    <div class="wrap">
+      <h2>확인 방법</h2>
+      <div class="verify-list">
+        <div class="verify-item">
+          <span>① 어디로</span>
+          <div>이 페이지 주소로 들어옵니다. (로그인 불필요)</div>
+        </div>
+        <div class="verify-item">
+          <span>② 무엇을</span>
+          <div>"활동" 섹션의 카드에 마우스를 올리거나 Tab으로 이동합니다.</div>
+        </div>
+        <div class="verify-item">
+          <span>③ 통과 시</span>
+          <div>상황·행동·결과가 담긴 상세 내용이 펼쳐져 보입니다.</div>
+        </div>
+        <div class="verify-item">
+          <span>④ 실패 시</span>
+          <div>내용이 펼쳐지지 않거나, 콘솔에 빨간 오류가 표시됩니다.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>문의: <a href="mailto:example@example.com">example@example.com</a> (실제 연락 채널로 교체하세요)</p>
+    <p>비밀번호·API 키 등 인증 정보는 이 페이지와 소스 코드 어디에도 포함되어 있지 않습니다.</p>
+  </div>
+</footer>
+
+<script>
+/* ============================================================
+   움직임 줄이기 토글: 누르면 모든 펼치기 애니메이션 속도를 0으로 만듭니다.
+   ============================================================ */
+var motionBtn = document.getElementById('motion-toggle');
+motionBtn.addEventListener('click', function(){
+  var reduced = document.body.classList.toggle('reduced-motion');
+  motionBtn.setAttribute('aria-pressed', reduced ? 'true' : 'false');
+  motionBtn.textContent = reduced ? '움직임 켜기' : '움직임 줄이기';
+});
+</script>
 
 </body>
 </html>
