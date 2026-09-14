@@ -24,14 +24,87 @@
   --accent-soft: #f6d9dc; /* 톤다운된 서브컬러 (버튼 '활성' 상태 배경 – 대비 5.4:1, 안전) */
   --radius:    6px;
   --max-w:     1120px;
+  --header-bg: rgba(255,255,255,0.92);   /* 상단바 배경 (반투명) */
 
   /* 호버/포커스로 내용이 펼쳐질 때 걸리는 시간. 0.3s → 0.6s 처럼 숫자만 바꾸면 속도가 바뀝니다 */
   --motion-speed: 0.25s;
+
+  --title-grad-start: #b3001b;
+  --title-grad-end:   #c97a3f;
+  ;
+}
+
+  .hero-title-accent{
+  font-size: clamp(48px, 6vw, 72px);      /* ← ALEPH 크기. 1.3을 키우면 더 커짐 (1em = 지금 h1 크기) */
+  background: linear-gradient(90deg, var(--title-grad-start), var(--title-grad-end));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  display: block;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  margin-bottom: 4px;
+}
+
+
+/* ============================================================
+   다크 모드 색상. 시스템이 다크 모드면 자동 적용되고,
+   헤더의 "다크 모드" 버튼으로도 직접 켜고 끌 수 있습니다.
+   대비율은 전부 4.5:1 이상으로 미리 계산해 둔 값입니다.
+   ============================================================ */
+/*@media (prefers-color-scheme: dark){
+  :root{
+    --bg:        #121316;
+    --bg-soft:   #1e2024;
+    --text:      #f2f3f5;
+    --text-mute: #aab0b8;
+    --border:    #33363c;
+    --accent:    #ff5c74;
+    --accent-bg: #2a1319;
+    --accent-soft: #3a1620;
+    --header-bg: rgba(18,19,22,0.92);
+    --title-grad-start: #b3001b;
+    --title-grad-end:   #c97a3f;
+  }
+} */
+body.dark-mode{
+  --bg:        #121316;
+  --bg-soft:   #1e2024;
+  --text:      #f2f3f5;
+  --text-mute: #aab0b8;
+  --border:    #33363c;
+  --accent:    #ff5c74;
+  --accent-bg: #2a1319;
+  --accent-soft: #3a1620;
+  --header-bg: rgba(18,19,22,0.92);
+
+  --title-grad-start: #ff5c74;
+  --title-grad-end:   #ffa768;
+}
+/* 시스템은 다크인데 버튼으로 "라이트 모드"를 직접 선택했을 때 되돌리는 값 */
+body.light-mode{
+  --bg:        #ffffff;
+  --bg-soft:   #f4f5f7;
+  --text:      #16181c;
+  --text-mute: #4b5563;
+  --border:    #e5e7eb;
+  --accent:    #b3001b;
+  --accent-bg: #fff1f2;
+  --accent-soft: #f6d9dc;
+  --header-bg: rgba(255,255,255,0.92);
+
+  --title-grad-start: #b3001b;
+  --title-grad-end:   #c97a3f;
 }
 
 /* 시스템이 "동작 줄이기"를 설정했거나, 아래 토글 버튼을 누르면 애니메이션을 없앱니다 */
 @media (prefers-reduced-motion: reduce){
   :root{ --motion-speed: 0s; }
+
+  --title-grad-start: #ff5c74;
+  --title-grad-end:   #ffa768;
 }
 body.reduced-motion{
   --motion-speed: 0s !important;
@@ -49,6 +122,7 @@ body{
   background: var(--bg);
   line-height: 1.6;
   font-size: 16px;
+  transition: background-color var(--motion-speed) ease, color var(--motion-speed) ease;
 }
 a{ color: var(--accent); }
 a:focus-visible, button:focus-visible{
@@ -70,9 +144,10 @@ section{ padding: 40px 0; }
 /* ---------------- 헤더 ---------------- */
 header{
   position: sticky; top: 0; z-index: 10;
-  background: rgba(255,255,255,0.92);
+  background: var(--header-bg);
   backdrop-filter: blur(6px);
   border-bottom: 1px solid var(--border);
+  transition: background-color var(--motion-speed) ease, border-color var(--motion-speed) ease;
 }
 .header-inner{
   display:flex; align-items:center; justify-content:space-between;
@@ -91,7 +166,8 @@ nav a{
 }
 nav a:hover, nav a:focus-visible{ color: var(--accent); }
 
-#motion-toggle{
+.toggle-group{ display: flex; gap: 8px; }   /* 버튼 두 개 사이 간격은 이 gap 숫자만 바꾸면 됩니다 */
+.pill-toggle{
   font-size: 13px;
   padding: 6px 12px;
   border: 1px solid var(--border);
@@ -100,7 +176,7 @@ nav a:hover, nav a:focus-visible{ color: var(--accent); }
   color: var(--text-mute);
   cursor: pointer;
 }
-#motion-toggle[aria-pressed="true"]{
+.pill-toggle[aria-pressed="true"]{
   border-color: var(--accent);
   color: var(--accent);
 }
@@ -108,8 +184,8 @@ nav a:hover, nav a:focus-visible{ color: var(--accent); }
 /* ---------------- 히어로 (소개) ---------------- */
 #hero{ padding: 44px 0 28px; position: relative; overflow: hidden; }
 #hero h1{
-  font-size: clamp(26px, 3.1vw, 40px);
-  line-height: 1.35;
+  font-size: clamp(24px, 2.4vw, 30px);
+  line-height: 1.25;
   max-width: 18ch;
 }
 #hero .lede{
@@ -159,131 +235,133 @@ nav a:hover, nav a:focus-visible{ color: var(--accent); }
   color: rgba(255,255,255,.85);
 }
 
-/* ---------------- 활동/강점 카드 (호버로 내용 펼치기) ---------------- */
+/* ---------------- 활동/강점 카드 (클릭하면 그 카드만 커지면서 내용이 보임) ---------------- */
 #activities h2{ font-size: 20px; margin-bottom: 4px; }
 .section-sub{ color: var(--text-mute); font-size: 14px; margin-bottom: 20px; }
 
-.card-grid{
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);   /* 2열 = 4분면 느낌. 열 개수를 바꾸려면 2를 다른 숫자로 */
-  gap: 20px;
-}
-@media (max-width: 700px){
-  .card-grid{ grid-template-columns: 1fr; } /* 화면이 아주 좁을 때만 1열로 (안전장치) */
-}
-
-/* 카드 한 장 = "상호작용 1개" 담당 영역. 카드 전체 크기는 여기서 조절합니다 */
-.reveal-card{
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--accent);   /* 세로띠: 굵기 3px, 색 --accent */
-  border-radius: var(--radius);
-  padding: 16px;
-  background: var(--bg);
+/* 카드 3개를 한 줄로 붙여서(간격 없이) 배치하는 띠 형태.
+   height 숫자만 바꾸면 전체 세로 길이(=카드 세로 길이)가 바뀝니다 */
+.acc-row{
   display: flex;
-  flex-direction: column;
-  min-height: 420px;   /* ← 카드 전체 높이. 이 숫자만 키우면 카드가 더 커집니다 */
+  height: 560px;          /* ← 카드 세로 길이. 숫자를 늘리면 더 길쭉해집니다 */
 }
 
-.evidence-line{ margin-top: 10px; font-size: 13px; }
-.evidence-line a{ text-decoration: underline; }
-
-/* ================================================================
-   카드 사진 + 텍스트 영역
-   - 기본으로 보이는 내용: 제목(h3) + 요약(.summary) → .card-media-caption
-   - 마우스를 올리면(hover) 보이는 내용: 상황·행동·결과 → .card-hover-detail
-   - 사진: <img class="card-photo" src="...">. src를 비우면 사진 없이
-     연한 배경 + 검정 글씨 카드로 자동 전환됩니다 (:has 선택자가 감지).
-   ================================================================ */
-.card-media{
+/* 카드 한 장 = "상호작용 1개" 담당 영역. 라운드는 --card-radius 숫자만 바꾸면 됩니다 */
+.acc-card{
+  --card-radius: 16px;
   position: relative;
-  flex: 1;                       /* 카드에서 남는 공간을 사진이 꽉 채움 */
-  border-radius: var(--radius);
+  flex: 0 0 33.3333%;     /* 기본: 3장이 정확히 1/3씩 */
+  border: 1px solid var(--border);
+  border-radius: var(--card-radius);
   overflow: hidden;
-  background: var(--bg-soft);    /* 사진이 없을 때 보이는 배경색 */
+  background: var(--bg-soft);
+  cursor: pointer;
+  transition: flex-basis var(--motion-speed) ease, transform var(--motion-speed) ease;
 }
+.acc-card:focus-visible{
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+  z-index: 5;
+}
+
+/* 클릭 가능하다는 걸 알려주는 "숨쉬는" 효과: 마우스를 올리면 살짝 커졌다 작아졌다 반복합니다.
+   0.02 숫자를 키우면 더 크게 숨쉬고, 1.6s 숫자를 바꾸면 숨쉬는 속도가 바뀝니다 */
+@keyframes card-breathe{
+  0%, 100%{ transform: scale(1); }
+  50%{ transform: scale(1.02); }
+}
+.acc-card:hover:not(.is-active),
+.acc-card:focus-visible:not(.is-active){
+  animation: card-breathe 1.6s ease-in-out infinite;
+  z-index: 4;
+}
+/* 움직임 줄이기가 켜져 있으면 숨쉬는 효과도 함께 꺼집니다 */
+@media (prefers-reduced-motion: reduce){
+  .acc-card{ animation: none !important; }
+}
+body.reduced-motion .acc-card{ animation: none !important; }
+
+/* 카드 하나를 클릭하면(.is-active) 그 카드는 커지고 나머지 2장은 같이 작아집니다.
+   숫자(60% / 20%)만 바꾸면 확대·축소 비율이 바뀝니다. 셋을 더하면 100%가 되게 맞춰주세요 */
+.acc-row.has-active .acc-card{ flex-basis: 20%; }
+.acc-row.has-active .acc-card.is-active{ flex-basis: 60%; }
+.acc-row.has-active .acc-card:not(.is-active){
+  filter: brightness(0.5);   /* ← 숫자(0~1)를 낮추면 더 어두워집니다 */
+}
+
 .card-photo{
   position: absolute; inset: 0;
   width: 100%; height: 100%;
   object-fit: cover;
-  display: none;                 /* 기본값: src 없으면 숨김 */
-}
-.card-media:has(.card-photo[src]:not([src=""])) .card-photo{
-  display: block;
 }
 
-/* 아래에서 위로 옅어지는 "어둡게 + 블러" 레이어. 사진이 있을 때만 보입니다.
-   --card-fade-height : 블러가 차지하는 높이 비율 (아래 기준)
-   --card-fade-blur    : 블러 강도
-   --card-fade-dark    : 글씨 바로 아래쪽 어둡기(0~1) */
-.card-media{
-  --card-fade-height: 78%;
-  --card-fade-blur: 10px;
-  --card-fade-dark: 0.85;
-}
+/* 아래에서 위로 옅어지는 "어둡게 + 블러" 레이어 (항상 켜져 있음 — 사진 위 글씨용)
+   --fade-h    : 블러/어둡기 영역의 높이 비율. 활성 카드는 더 크게 잡아 상세 내용까지 덮습니다
+   --fade-blur : 블러 강도
+   --fade-dark : 글씨 바로 아래쪽 어둡기(0~1) */
 .card-media-fade{
+  --fade-h: 42%;
+  --fade-blur: 10px;
+  --fade-dark: 0.85;
   position: absolute; left: 0; right: 0; bottom: 0;
-  height: var(--card-fade-height);
+  height: var(--fade-h);
   background: linear-gradient(to top,
-      rgba(0,0,0,var(--card-fade-dark)) 0%,
-      rgba(0,0,0,calc(var(--card-fade-dark) * 0.55)) 45%,
+      rgba(0,0,0,var(--fade-dark)) 0%,
+      rgba(0,0,0,calc(var(--fade-dark) * 0.55)) 45%,
       transparent 100%);
-  backdrop-filter: blur(var(--card-fade-blur));
-  -webkit-backdrop-filter: blur(var(--card-fade-blur));
+  backdrop-filter: blur(var(--fade-blur));
+  -webkit-backdrop-filter: blur(var(--fade-blur));
   mask-image: linear-gradient(to top, black 45%, transparent 100%);
   -webkit-mask-image: linear-gradient(to top, black 45%, transparent 100%);
-  opacity: 0;                    /* 기본값: 사진 없으면 숨김 */
+  transition: height var(--motion-speed) ease;
 }
-.card-media:has(.card-photo[src]:not([src=""])) .card-media-fade{
-  opacity: 1;
-}
+.acc-card.is-active .card-media-fade{ --fade-h: 88%; }
 
-/* 기본으로 노출되는 텍스트 (제목 + 요약) — 폰트 크기는 여기서 지정 */
-.card-media-caption{
-  position: absolute; left: 0; right: 0; bottom: 0;
-  padding: 16px;
+/* 커서를 올리지 않은 기본 상태에서 항상 보이는 것: 사진 + 키워드(제목) */
+.card-keyword{
+  position: absolute; left: 0; right: 0; bottom: 24px;
+  padding: 0 20px;
   z-index: 2;
-  transition: opacity var(--motion-speed) ease;
-}
-.card-media-caption h3{
+  color: #fff;
+  font-size: 24px;       /* ← 기본으로 보이는 키워드 글자 크기 */
+  font-weight: 700;
   margin: 0;
-  font-size: 18px;      /* ← 기본 노출 제목 크기 */
 }
-.card-media-caption .summary{
-  margin-top: 6px;
-  font-size: 14px;      /* ← 기본 노출 요약 크기 */
-}
-/* 사진이 없을 때: 검정 글씨 / 사진이 있을 때: 흰 글씨 (자동 전환) */
-.card-media-caption h3{ color: var(--text); }
-.card-media-caption .summary{ color: var(--text-mute); }
-.card-media:has(.card-photo[src]:not([src=""])) .card-media-caption h3{ color: #fff; }
-.card-media:has(.card-photo[src]:not([src=""])) .card-media-caption .summary{ color: rgba(255,255,255,.85); }
 
-/* 마우스를 올렸을 때만 나타나는 상세 내용 (상황·행동·결과) */
-.card-hover-detail{
+/* 클릭했을 때만(.is-active) 나타나는 상세 내용 */
+.card-detail{
   position: absolute; left: 0; right: 0; bottom: 0;
   padding: 16px;
   z-index: 3;
-  opacity: 0;
-  transition: opacity var(--motion-speed) ease;
-}
-.card-hover-detail dt{ font-size: 12.5px; font-weight: 700; margin-top: 6px; }
-.card-hover-detail dt:first-child{ margin-top: 0; }
-.card-hover-detail dd{ margin: 2px 0 0; font-size: 13.5px; }
-.card-hover-detail dt, .card-hover-detail dd{ color: var(--text); }
-.card-media:has(.card-photo[src]:not([src=""])) .card-hover-detail dt,
-.card-media:has(.card-photo[src]:not([src=""])) .card-hover-detail dd{
   color: #fff;
-}
-
-/* 호버(마우스) 또는 포커스(키보드로 카드 안 링크에 Tab 진입)하면
-   기본 텍스트는 사라지고 상세 내용이 크로스페이드로 나타납니다 */
-.reveal-card:hover .card-media-caption,
-.reveal-card:focus-within .card-media-caption{
   opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--motion-speed) ease;
+  transition: flex-basis var(--motion-speed); ease, transform: var(--motion-speed) ease, filter var(--motion-speed) ease;
 }
-.reveal-card:hover .card-hover-detail,
-.reveal-card:focus-within .card-hover-detail{
+.acc-card.is-active .card-detail{
   opacity: 1;
+  visibility: visible;
+}
+/* 상세 내용이 나타날 때는 기본 키워드를 숨김 (겹치지 않게) */
+.acc-card.is-active .card-keyword{ opacity: 0; visibility: hidden; }
+
+.card-detail dt{ font-size: 12.5px; font-weight: 700; margin-top: 8px; }
+.card-detail dt:first-child{ margin-top: 0; }
+.card-detail dd{ margin: 2px 0 0; font-size: 13.5px; color: rgba(255,255,255,.85); }
+.card-detail .evidence-line{ margin-top: 12px; font-size: 13px; }
+.card-detail .evidence-line a{ color: #fff; text-decoration: underline; }
+
+/* 사진이 없는(src="") 카드는 배경색만 있는 상태로 자연스럽게 전환 — 글씨도 어두운 색으로 */
+.acc-card:has(.card-photo[src=""]) .card-media-fade,
+.acc-card:has(.card-photo:not([src])) .card-media-fade{ opacity: 0; }
+.acc-card:has(.card-photo[src=""]) .card-keyword,
+.acc-card:has(.card-photo:not([src])) .card-keyword,
+.acc-card:has(.card-photo[src=""]) .card-detail dt,
+.acc-card:has(.card-photo:not([src])) .card-detail dt,
+.acc-card:has(.card-photo[src=""]) .card-detail dd,
+.acc-card:has(.card-photo:not([src])) .card-detail dd{
+  color: var(--text);
 }
 
 /* ---------------- 공개 범위 ---------------- */
@@ -342,7 +420,7 @@ footer a{ color: var(--text-mute); }
 
 <header>
   <div class="header-inner">
-    <a class="logo" href="#hero">이니셜/이름</a>
+    <a class="logo" href="#hero">대전 B반 조영준</a>
     <!-- ✏️ EDIT: 왼쪽 로고 글자를 본인 이름 이니셜 등으로 바꾸세요 (개인정보 과다 노출 주의) -->
 
     <nav aria-label="주요 메뉴">
@@ -352,9 +430,14 @@ footer a{ color: var(--text-mute); }
       <a href="#verify">확인 방법</a>
     </nav>
 
-    <button id="motion-toggle" type="button" aria-pressed="false">
-      움직임 줄이기
-    </button>
+    <div class="toggle-group">
+      <button id="motion-toggle" class="pill-toggle" type="button" aria-pressed="false">
+        움직임 줄이기
+      </button>
+      <button id="dark-toggle" class="pill-toggle" type="button" aria-pressed="false">
+        다크 모드
+      </button>
+    </div>
   </div>
 </header>
 
@@ -369,111 +452,96 @@ footer a{ color: var(--text-mute); }
     <div class="hero-fade"></div>
     <div class="wrap">
       <h1>
-        정보보안 직무 채용 담당자에게<br>
-        제 학습 활동과 근거를 보여드리는 페이지입니다.
+        <span class="hero-title-accent">ALEPH</span><br>
+        Portfolio
       </h1>
       <!-- ✏️ EDIT: 위 한 문장을 "누구에게, 무엇을 보여주는지"로 직접 수정하세요 -->
       <p class="lede">
-        정보보안 분야 취업을 준비하며 들은 수업과 프로젝트에서 확인한 강점 3가지를,
+        나의 강점 3가지를,
         상황–행동–결과와 공개 가능한 근거로 정리했습니다.
       </p>
     </div>
   </section>
 
   <!-- =========================================================
-       2. 활동 / 강점 (카드에 마우스를 올리면 상세 내용이 나타납니다)
+       2. 활동 / 강점 (클릭하면 그 카드만 커지면서 내용이 보입니다)
        ========================================================= -->
   <section id="activities">
     <div class="wrap">
       <h2>강점과 활동 3가지</h2>
-      <p class="section-sub">각 카드에 마우스를 올리거나 Tab으로 이동하면 상황·행동·결과가 나타납니다.</p>
+      <!-- <p class="section-sub">카드를 클릭하면(또는 Tab으로 이동해 Enter/Space) 그 카드가 커지면서 상세 내용이 보입니다.</p> -->
 
-      <div class="card-grid">
+      <div class="acc-row" id="acc-row">
 
-        <!-- 카드 1 -->
-        <article class="reveal-card">
-          <!-- ✏️ 사진을 다른 걸로 바꾸려면 src 경로만 교체하세요. src=""로 비우면 사진 없이 연한 배경으로 자동 전환됩니다 -->
-          <div class="card-media">
-            <img class="card-photo" src="https://picsum.photos/seed/security1/900/900" alt="">
-            <div class="card-media-fade"></div>
+        <!-- 카드 1. role="button"+tabindex로 클릭/키보드 모두 지원. 안에 실제 링크(<a>)가 있어서 <button>을 쓸 수 없어 이 방식을 씁니다 -->
+        <div class="acc-card" role="button" tabindex="0" aria-expanded="false" aria-label="강점 1 자세히 보기">
+          <!-- ✏️ 사진을 바꾸려면 src만 교체하세요. src=""로 비우면 사진 없이 연한 배경으로 자동 전환됩니다 -->
+          <img class="card-photo" src="https://picsum.photos/seed/security1/900/900" alt="">
+          <div class="card-media-fade"></div>
 
-            <div class="card-media-caption">
-              <h3>강점 제목 1 (예: 취약점 분석 스터디 운영)</h3>
-              <p class="summary">기본으로 보이는 한 줄 요약을 여기에 적으세요.</p>
-            </div>
+          <h3 class="card-keyword">AI</h3>
 
-            <div class="card-hover-detail">
-              <dl>
-                <dt>상황</dt>
-                <dd>이 활동을 하게 된 배경을 적으세요.</dd>
-                <dt>행동</dt>
-                <dd>본인이 실제로 한 일을 적으세요.</dd>
-                <dt>결과</dt>
-                <dd>눈으로 확인 가능한 결과(수치, 산출물 등)를 적으세요.</dd>
-              </dl>
-            </div>
+          <div class="card-detail">
+            <h3 style="margin:0 0 6px;">강점 제목 1 (예: 취약점 분석 스터디 운영)</h3>
+            <dl>
+              <dt>상황</dt>
+              <dd>이 활동을 하게 된 배경을 적으세요.</dd>
+              <dt>행동</dt>
+              <dd>본인이 실제로 한 일을 적으세요.</dd>
+              <dt>결과</dt>
+              <dd>눈으로 확인 가능한 결과(수치, 산출물 등)를 적으세요.</dd>
+            </dl>
+            <p class="evidence-line">
+              근거: <a href="#evidence-note">스터디 발표 자료 (링크로 교체)</a>
+            </p>
           </div>
-
-          <p class="evidence-line">
-            근거: <a href="#evidence-note">스터디 발표 자료 (링크로 교체)</a>
-          </p>
-        </article>
+        </div>
 
         <!-- 카드 2 -->
-        <article class="reveal-card">
-          <div class="card-media">
-            <img class="card-photo" src="https://picsum.photos/seed/security2/900/900" alt="">
-            <div class="card-media-fade"></div>
+        <div class="acc-card" role="button" tabindex="0" aria-expanded="false" aria-label="강점 2 자세히 보기">
+          <img class="card-photo" src="https://picsum.photos/seed/security2/900/900" alt="">
+          <div class="card-media-fade"></div>
 
-            <div class="card-media-caption">
-              <h3>강점 제목 2 (예: CTF 문제 풀이 기록)</h3>
-              <p class="summary">기본으로 보이는 한 줄 요약을 여기에 적으세요.</p>
-            </div>
+          <h3 class="card-keyword">침착함</h3>
 
-            <div class="card-hover-detail">
-              <dl>
-                <dt>상황</dt>
-                <dd>이 활동을 하게 된 배경을 적으세요.</dd>
-                <dt>행동</dt>
-                <dd>본인이 실제로 한 일을 적으세요.</dd>
-                <dt>결과</dt>
-                <dd>눈으로 확인 가능한 결과(수치, 산출물 등)를 적으세요.</dd>
-              </dl>
-            </div>
+          <div class="card-detail">
+            <h3 style="margin:0 0 6px;">강점 제목 2 (예: CTF 문제 풀이 기록)</h3>
+            <dl>
+              <dt>상황</dt>
+              <dd>이 활동을 하게 된 배경을 적으세요.</dd>
+              <dt>행동</dt>
+              <dd>본인이 실제로 한 일을 적으세요.</dd>
+              <dt>결과</dt>
+              <dd>눈으로 확인 가능한 결과(수치, 산출물 등)를 적으세요.</dd>
+            </dl>
+            <p class="evidence-line">
+              근거: <a href="#evidence-note">풀이 기록 저장소 (링크로 교체)</a>
+            </p>
           </div>
-
-          <p class="evidence-line">
-            근거: <a href="#evidence-note">풀이 기록 저장소 (링크로 교체)</a>
-          </p>
-        </article>
+        </div>
 
         <!-- 카드 3 -->
-        <article class="reveal-card">
-          <div class="card-media">
-            <img class="card-photo" src="https://picsum.photos/seed/security3/900/900" alt="">
-            <div class="card-media-fade"></div>
+        <div class="acc-card" role="button" tabindex="0" aria-expanded="false" aria-label="강점 3 자세히 보기">
+          <img class="card-photo" src="https://picsum.photos/seed/security3/900/900" alt="">
+          <div class="card-media-fade"></div>
 
-            <div class="card-media-caption">
-              <h3>강점 제목 3 (예: 꾸준한 학습 기록)</h3>
-              <p class="summary">기본으로 보이는 한 줄 요약을 여기에 적으세요.</p>
-            </div>
+          <h3 class="card-keyword">디테일</h3>
 
-            <div class="card-hover-detail">
-              <dl>
-                <dt>상황</dt>
-                <dd>이 활동을 하게 된 배경을 적으세요.</dd>
-                <dt>행동</dt>
-                <dd>본인이 실제로 한 일을 적으세요.</dd>
-                <dt>결과</dt>
-                <dd>눈으로 확인 가능한 결과(수치, 산출물 등)를 적으세요.</dd>
-              </dl>
-            </div>
+          <div class="card-detail">
+            <h3 style="margin:0 0 6px;">강점 제목 3 (예: 꾸준한 학습 기록)</h3>
+            <dl>
+              <dt>상황</dt>
+              <dd>이 활동을 하게 된 배경을 적으세요.</dd>
+              <dt>행동</dt>
+              <dd>본인이 실제로 한 일을 적으세요.</dd>
+              <dt>결과</dt>
+              <dd>눈으로 확인 가능한 결과(수치, 산출물 등)를 적으세요.</dd>
+            </dl>
+            <p class="evidence-line">
+              근거: <a href="#evidence-note">학습 블로그 (링크로 교체)</a>
+            </p>
           </div>
-
-          <p class="evidence-line">
-            근거: <a href="#evidence-note">학습 블로그 (링크로 교체)</a>
-          </p>
-        </article>
+        </div>
 
       </div>
     </div>
@@ -489,7 +557,7 @@ footer a{ color: var(--text-mute); }
         <div class="scope-box">
           <h3>공개하는 것</h3>
           <ul>
-            <li>수업/프로젝트에서 만든 결과물 요약</li>
+            <li>나의 흥미 분야와 강점</li>
             <li>학습 중인 보안 분야와 관심 주제</li>
             <li>공개 가능한 활동 근거 링크</li>
           </ul>
@@ -498,8 +566,8 @@ footer a{ color: var(--text-mute); }
         <div class="scope-box deny">
           <h3>공개하지 않는 것</h3>
           <ul>
-            <li>실명, 생년월일 등 개인 식별 정보</li>
-            <li>연락처, 주소 등 사적인 정보</li>
+            <li>주소, 생년월일 등 개인 식별 정보</li>
+            <li>얼굴이 드러나는 사진 등 초상 정보 </li>
             <li>비밀번호·API 키 등 인증 정보</li>
           </ul>
           <!-- ✏️ EDIT: 실제로 공개하지 않을 정보 3가지로 바꾸세요 -->
@@ -507,7 +575,7 @@ footer a{ color: var(--text-mute); }
       </div>
 
       <p id="evidence-note" class="section-sub" style="margin-top:22px;">
-        ※ 위 "근거" 링크는 예시입니다. 실제 배포 전, 각 카드의 링크를 본인의 공개 가능한 결과물 주소로 바꾸세요.
+       <!-- ※ 위 "근거" 링크는 예시입니다. 실제 배포 전, 각 카드의 링크를 본인의 공개 가능한 결과물 주소로 바꾸세요. -->
       </p>
     </div>
   </section>
@@ -525,7 +593,7 @@ footer a{ color: var(--text-mute); }
         </div>
         <div class="verify-item">
           <span>② 무엇을</span>
-          <div>"활동" 섹션의 카드에 마우스를 올리거나 Tab으로 이동합니다.</div>
+          <div>"활동" 섹션의 카드 하나를 클릭하거나, Tab으로 이동해 Enter를 누릅니다.</div>
         </div>
         <div class="verify-item">
           <span>③ 통과 시</span>
@@ -543,12 +611,85 @@ footer a{ color: var(--text-mute); }
 
 <footer>
   <div class="wrap">
-    <p>문의: <a href="mailto:example@example.com">example@example.com</a> (실제 연락 채널로 교체하세요)</p>
-    <p>비밀번호·API 키 등 인증 정보는 이 페이지와 소스 코드 어디에도 포함되어 있지 않습니다.</p>
+    <!-- <p>문의: <a href="mailto:example@example.com">example@example.com</a> (실제 연락 채널로 교체하세요)</p>
+    <p>비밀번호·API 키 등 인증 정보는 이 페이지와 소스 코드 어디에도 포함되어 있지 않습니다.</p> -->
   </div>
 </footer>
 
 <script>
+/* ============================================================
+   활동 카드: 클릭(또는 Tab으로 이동 후 Enter/Space)하면 그 카드만
+   커지고 다른 카드는 작아집니다. 같은 카드를 다시 누르면 원래대로.
+   - 카드 안의 "근거" 링크는 자체 클릭 이벤트를 막아(stopPropagation)
+     카드가 접히지 않고 링크만 정상적으로 열리게 합니다.
+   ============================================================ */
+var accRow = document.getElementById('acc-row');
+var accCards = accRow.querySelectorAll('.acc-card');
+
+function setActive(card){
+  var isAlreadyActive = card.classList.contains('is-active');
+
+  accCards.forEach(function(c){
+    c.classList.remove('is-active');
+    c.setAttribute('aria-expanded', 'false');
+  });
+
+  if (!isAlreadyActive){
+    card.classList.add('is-active');
+    card.setAttribute('aria-expanded', 'true');
+    accRow.classList.add('has-active');
+  } else {
+    accRow.classList.remove('has-active');
+  }
+}
+
+accCards.forEach(function(card){
+  card.addEventListener('click', function(){
+    setActive(card);
+  });
+  card.addEventListener('keydown', function(e){
+    if (e.key === 'Enter' || e.key === ' '){
+      e.preventDefault();
+      setActive(card);
+    }
+  });
+
+  var link = card.querySelector('.evidence-line a');
+  if (link){
+    link.addEventListener('click', function(e){
+      e.stopPropagation();
+    });
+  }
+});
+
+/* ============================================================
+   다크 모드 토글: 시스템 설정(prefers-color-scheme)을 기본값으로 쓰고,
+   버튼을 누르면 그 반대로 직접 전환합니다.
+   ============================================================ */
+var darkBtn = document.getElementById('dark-toggle');
+var prefersDark = false;
+
+function isDarkNow(){
+  if (document.body.classList.contains('dark-mode')) return true;
+  if (document.body.classList.contains('light-mode')) return false;
+  return prefersDark;
+}
+
+function updateDarkButton(){
+  var dark = isDarkNow();
+  darkBtn.setAttribute('aria-pressed', dark ? 'true' : 'false');
+  darkBtn.textContent = dark ? '라이트 모드' : '다크 모드';
+}
+
+darkBtn.addEventListener('click', function(){
+  var dark = isDarkNow();
+  document.body.classList.remove('dark-mode', 'light-mode');
+  document.body.classList.add(dark ? 'light-mode' : 'dark-mode');
+  updateDarkButton();
+});
+
+updateDarkButton();
+
 /* ============================================================
    움직임 줄이기 토글: 누르면 모든 펼치기 애니메이션 속도를 0으로 만듭니다.
    ============================================================ */
